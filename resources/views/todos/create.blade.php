@@ -1,26 +1,15 @@
 <x-app-layout>
-    <div class="flex items-center justify-center mt-3">
+    <h1 class="text-2xl text-white flex justify-center mt-3">Voeg een taak toe</h1>
+    <div class="flex items-center justify-center mt-3 bg-slate-500 pt-20 pb-20 min-w-72 m-20 rounded-lg flex-col">
         <form action="{{ route('tasks.store') }}" method="POST">
             @csrf
-            <label for="title" class="text-gray-200">Titel</label><br>
-            <input type="text" name="title" class="rounded-md"><br>
-            <label for="description" class="text-gray-200">Beschrijving</label><br>
-            <input type="text" name="description" class="rounded-md"><br><br>
-            <input type="submit" class="bg-slate-500 rounded-md p-2"><br><br>
+            <x-input-label for="title" class="text-gray-200">Titel</x-input-label>
+            <x-text-input type="text" name="title"></x-text-input>
+            <x-input-label for="description" class="text-gray-200">Beschrijving</x-input-label>
+            <x-text-input type="text" name="description"></x-text-input>
+            <x-input-error :messages="$errors->get('description')" class="mt-2"></x-input-error><br><br>
+            <x-primary-button>Opslaan</x-primary-button>
+
         </form>
-
-        @if (session()->has('success'))
-            <p class="text-green-400">
-                {{ session()->get('success') }}
-            </p>
-        @endif
-
-        @if ($errors->any())
-            <ul class="text-red-600">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        @endif
     </div>
 </x-app-layout>

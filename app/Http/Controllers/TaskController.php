@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -28,19 +30,15 @@ class TaskController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:32',
-            'description' => 'string|max:255',
+            'description' => 'string|max:255|nullable',
         ]);
 
-        $task = new Task();
-        $task->title = $request->input('title');
-        $task->description = $request->input('description');
-        $task->done = false;
-        $task->save();
-        return redirect()->back()->with('success', 'Comment stored successfully!');
+        $request->user()->tasks()->create($validated);
+        return redirect()->route('tasks.index');
     }
 
     /**
@@ -48,7 +46,7 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        return view('todos.detail');
+        return view('todos.detail', ['task' => $task]);
     }
 
     /**
@@ -56,7 +54,7 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        //
+        return view('todos.edit', ['task' => $task]);
     }
 
     /**
@@ -64,7 +62,20 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        //
+        $request->validate([
+            'title' => 'required|string|max:32',
+            'description' => 'string|max:255|nullable',
+            'done' => 'boolean'
+        ]);
+
+        $updated_task = [
+            'user_id' => auth()->id(),
+            'title' => $request->title,
+            'description' => $request->description ?? '',
+            'done' => isset($request->done)
+        ];
+        $task->update($updated_task);
+        return redirect(route('tasks.index'));
     }
 
     /**
@@ -72,6 +83,17 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        $task->delete();
+        return redirect('tasks');
+    }
+
+    public function toggleCompleted(Task $task)
+    {
+
+        $task->update([
+            'done' => !$task->done
+        ]);
+
+        return redirect(route('tasks.index'));
     }
 }
